@@ -1,0 +1,8 @@
+template:
+  path: iam-instance-profile.yaml.j2
+  type: file
+
+parameters:
+  InstanceProfileName: EC2InstanceProfile
+  EC2IAMSSMRole: !stack_output_external IAM-dev-iam-ssm-role::RoleName
+  

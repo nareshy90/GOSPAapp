@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "This template creates IAM Role with policy"
+
+Resources:
+  IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      {%- if sceptre_user_data.AssumeRolePolicyDocument is defined %}
+      AssumeRolePolicyDocument: {{ sceptre_user_data.AssumeRolePolicyDocument | tojson }}
+      {%- else %}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              AWS:
+                - {{ sceptre_user_data.principal_role_arn }}
+            Action:
+              - "sts:AssumeRole"
+       {%- endif %}
+      Path: "/"
+      RoleName: {{ sceptre_user_data.ServiceName }}-role
+      {%- if sceptre_user_data.ManagedPolicyARNS is defined %}
+      ManagedPolicyArns: {{ sceptre_user_data.ManagedPolicyARNS | tojson }}
+      {%- endif %}
+  {%- if sceptre_user_data.PolicyDocument is defined %}
+  IAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: {{ sceptre_user_data.ServiceName }}-policy
+      PolicyDocument: {{ sceptre_user_data.PolicyDocument | tojson }}
+      Roles:
+        - !Ref IAMRole
+  {%- endif %}
+Outputs:
+  RoleName:
+    Description: 'The name of the role created.'
+    Value: !Ref IAMRole
+    Export:
+      Name: !Sub '${AWS::StackName}-RoleName'
+  RoleArn:
+    Description: 'ARN of the role created.'
+    Value: !GetAtt IAMRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-RoleARN'

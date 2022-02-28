@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  EC2IAMSSMRole:
+    Type: String
+  InstanceProfileName:
+    Type: String
+
+Description: "This template is going to create an IAM Instance Profile for EC2 to use SSM"
+Resources:
+  EC2IAMInstanceProfile: 
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Ref InstanceProfileName
+      Path: /
+      Roles:
+        - !Ref EC2IAMSSMRole
+
+Outputs:
+  EC2IAMInstanceProfile:
+    Description: EC2 IAM InstanceProfile
+    Value: !Ref EC2IAMInstanceProfile
+
+  
+      
+
+        
+        
+        
+
+    
+

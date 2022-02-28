@@ -1,0 +1,20 @@
+template:
+  path: iam.yaml.j2
+  type: file
+
+sceptre_user_data:
+  ServiceName: ec2-ssm-role
+  AssumeRolePolicyDocument:
+    Version: "2012-10-17"
+    Statement:
+      - Effect: "Allow"
+        Principal:
+          Service:
+            - "ec2.amazonaws.com"
+        Action:
+          - "sts:AssumeRole"
+  ManagedPolicyARNS:
+    - 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
+    - 'arn:aws:iam::aws:policy/AmazonSSMPatchAssociation'
+      
+  
