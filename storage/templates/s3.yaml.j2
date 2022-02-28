@@ -1,0 +1,47 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation Template to create S3 bucket'
+
+Parameters:
+  AccessControl:
+    Type: String
+    Default: Private
+    AllowedValues:
+      - Private
+      - BucketOwnerRead
+      - BucketOwnerFullControl
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: {{ sceptre_user_data.bucket_name }}
+      AccessControl: !Ref AccessControl
+      BucketEncryption:
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: {{ sceptre_user_data.server_side_encryption_algorithm }}
+      {% if sceptre_user_data.BlockPublicAcls is defined %}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: {{ sceptre_user_data.BlockPublicAcls }}
+        BlockPublicPolicy: {{ sceptre_user_data.BlockPublicPolicy }}
+        IgnorePublicAcls: {{ sceptre_user_data.IgnorePublicAcls }}
+        RestrictPublicBuckets: {{ sceptre_user_data.RestrictPublicBuckets }}
+      {% endif %}   
+  {% if sceptre_user_data.policy_document is defined %}
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    DependsOn: "S3Bucket"
+    Properties: 
+      Bucket: {{ sceptre_user_data.bucket_name }}
+      PolicyDocument: {{ sceptre_user_data.policy_document | tojson }}
+   {% endif %}
+  
+
+Outputs:
+  S3Bucket:
+    Value: {{ sceptre_user_data.bucket_name }}
+    Description: Name of the S3 bucket
+  S3BucketArn:
+    Value: !GetAtt S3Bucket.Arn
+    Description: ARN of S3 Bucket

@@ -1,0 +1,13 @@
+template:
+  path: s3.yaml.j2
+  type: file
+parameters: {}
+sceptre_user_data:
+  bucket_name: go-spa-project-source-code
+  server_side_encryption_algorithm: 'aws:kms'
+  BlockPublicAcls: true 
+  BlockPublicPolicy: true
+  IgnorePublicAcls: true 
+  RestrictPublicBuckets: true
+      
+  
