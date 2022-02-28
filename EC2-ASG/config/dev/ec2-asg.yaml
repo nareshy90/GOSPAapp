@@ -1,0 +1,34 @@
+template:
+  path: ec2-asg.yaml.j2
+  type: file
+parameters:
+  LaunchTemplateName: GoSPAEC2ASGLaunchTemplate
+  InstanceType: "t2.micro"
+  KeyName: "go-spa-ec2-key"
+  EC2IAMInstanceProfile: !stack_output_external IAM-dev-iam-instance-profile::EC2IAMInstanceProfile
+  EC2Subneta: !stack_output_external gospa-app-project-dev-vpc::PrivateSubnet1
+  EC2Subnetb: !stack_output_external gospa-app-project-dev-vpc::PrivateSubnet2
+  EC2SG: !stack_output_external security-groups-dev-ec2-rds-alb-sg::EC2SG
+  DeviceName: "/dev/xvda"
+  Encrypted: 'true'
+  VolumeSize: '10'
+  VolumeType: 'gp2'
+  AssociatePublicIpAddress: 'false'
+  DeleteOnTermination: 'true'
+  DesiredCapacity: '2' # Autoscaling balances instances between AZs. Selected 2 instances so that each AZ can have 1 instances.
+  HealthCheckGracePeriod: '300'
+  HealthCheckType: "EC2"
+  MaxSize: '5'
+  MinSize: '2'
+  TagValue: "go-spa-dev"
+  PropagateAtLaunch: 'true'
+  APPDirName: '/app'
+  S3BucketName: 'go-spa-project-source-code'
+  APPVersion: 'TechChallengeApp_v.0.9.0_linux64.zip'
+  Hostname: 'GOSPADEV01'
+
+
+sceptre_user_data:
+  TargetGroupArn: !stack_output_external alb-dev-alb-listener::TargetGroup1ARN
+
+  

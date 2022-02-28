@@ -1,0 +1,141 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  EC2Subneta:
+    Type: String
+  EC2Subnetb:
+    Type: String
+  ImageId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id> 
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2 #Replace with hardened Image
+  EC2SG:
+    Type: String
+  EC2IAMInstanceProfile:
+    Type: String
+  InstanceType:
+    Type: String
+  KeyName:
+    Type: String
+  DeviceName:
+    Type: String
+  Encrypted:
+    Type: String 
+  VolumeSize:
+    Type: String
+  VolumeType:
+    Type: String
+  AssociatePublicIpAddress:
+    Type: String
+  DeleteOnTermination:
+    Type: String
+  DesiredCapacity:
+    Type: String
+  HealthCheckGracePeriod:
+    Type: String
+  HealthCheckType:
+    Type: String
+  MaxSize:
+    Type: String
+  MinSize:
+    Type: String
+  TagValue:
+    Type: String
+  PropagateAtLaunch:
+    Type: String
+  LaunchTemplateName:
+    Type: String
+  APPDirName:
+    Type: String
+  S3BucketName:
+    Type: String
+  APPVersion:
+    Type: String
+  Hostname:
+    Type: String
+
+
+
+Description: >-
+  This template creates a Multi-AZ (two Availability Zones) EC2 instances with multi-subnet VPC infrastructure
+
+Resources:
+  EC2LaunchTemplate:
+    Type: 'AWS::EC2::LaunchTemplate'
+    Properties:
+      LaunchTemplateName: !Ref "LaunchTemplateName"
+      LaunchTemplateData:
+        ImageId: !Ref ImageId
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref KeyName
+        IamInstanceProfile: 
+           Name: !Ref EC2IAMInstanceProfile
+        BlockDeviceMappings:
+          - 
+            DeviceName: !Ref DeviceName
+            Ebs: 
+                Encrypted: !Ref Encrypted
+                VolumeSize: !Ref VolumeSize
+                VolumeType: !Ref VolumeType
+                DeleteOnTermination: true
+        UserData:
+          Fn::Base64:
+            !Sub |
+                 #!/bin/bash -xe
+                 #Create Directory for application
+                 mkdir /app
+                 cd /app
+                 #Download source code from S3 bucket
+                 aws s3 cp s3://go-spa-project-source-code/TechChallengeApp_v.0.9.0_linux64.zip .
+                 #Unpack the application code
+                 unzip TechChallengeApp_v.0.9.0_linux64.zip
+                 #Change the hostname
+                 hostname GOSPADEV01
+                 echo GOSPADEV01 > /etc/hostname
+                 echo HOSTNAME=GOSPADEV01 >> /etc/sysconfig/network
+
+        NetworkInterfaces:
+          - DeviceIndex: '0'
+            AssociatePublicIpAddress: !Ref AssociatePublicIpAddress
+            DeleteOnTermination: !Ref DeleteOnTermination
+            SubnetId: !Ref EC2Subneta
+            Groups:
+              - !Ref EC2SG
+        NetworkInterfaces:
+          - DeviceIndex: '0'
+            AssociatePublicIpAddress: !Ref AssociatePublicIpAddress
+            DeleteOnTermination: !Ref DeleteOnTermination
+            SubnetId: !Ref EC2Subnetb
+            Groups:
+              - !Ref EC2SG
+
+  EC2InstanceASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      DesiredCapacity: !Ref DesiredCapacity
+      HealthCheckGracePeriod: !Ref HealthCheckGracePeriod
+      HealthCheckType: !Ref HealthCheckType
+      LaunchTemplate:
+        LaunchTemplateId: !Ref EC2LaunchTemplate
+        Version: !GetAtt EC2LaunchTemplate.LatestVersionNumber
+      MaxSize: !Ref MaxSize
+      MinSize: !Ref MinSize
+      VPCZoneIdentifier:
+        - !Ref EC2Subneta
+        - !Ref EC2Subnetb
+      {% if sceptre_user_data.TargetGroupArn is defined %}
+      TargetGroupARNs: 
+        - {{ sceptre_user_data.TargetGroupArn }}
+      {% endif %}
+      Tags:
+      - Key: Name
+        Value: !Ref TagValue
+        PropagateAtLaunch: !Ref PropagateAtLaunch
+  
+
+Outputs:
+  EC2InstanceASG:
+    Description: EC2 Group Name
+    Value: !Ref EC2InstanceASG
+  EC2LaunchTemplate:
+    Description: EC2 launch Template
+    Value: !Ref EC2LaunchTemplate
