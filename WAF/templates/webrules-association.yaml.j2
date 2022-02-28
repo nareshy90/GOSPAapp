@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  NameTagValue:
+    Type: String
+
+
+Description: >-
+  This template creates Web ACL Association
+
+Resources:
+  {% for web_acl_ass in sceptre_user_data.web_acl_assns -%}
+  {% for web_acl_ass_name,web_acl_ass_data in web_acl_ass.items() %}
+  {{ web_acl_ass_name }}:
+    Type: 'AWS::WAFv2::WebACLAssociation'
+    Properties:
+      WebACLArn: {{ web_acl_ass_data.WebACLArn }}
+      ResourceArn: {{ web_acl_ass_data.ResourceArn }}
+  {%- endfor %}
+  {%- endfor %}
+
+Outputs:
+  {% for web_acl_ass in sceptre_user_data.web_acl_assns -%}
+  {% for web_acl_ass_name,web_acl_ass_data in web_acl_ass.items() %}
+  {{ web_acl_ass_name | indent(width=2) }}:
+    Value: !Ref {{ web_acl_ass_name }}
+  {%- endfor %}
+  {%- endfor %}
+ 
+     
+
+       
+       
+       
+
+   
+

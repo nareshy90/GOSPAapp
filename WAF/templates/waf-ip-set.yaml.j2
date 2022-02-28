@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >-
+  This template creates Web ACL IP Set
+
+Resources:
+  {% for ip_set in sceptre_user_data.ip_sets -%}
+  {% for ip_set_name,ip_set_data in ip_set.items() %}
+  {{ ip_set_name }}:
+      Type: 'AWS::WAFv2::IPSet'
+      Properties:
+        Description: {{ ip_set_data.IpSetDescription }}
+        Name: {{ ip_set_data.IpSetName }}
+        Scope: {{ ip_set_data.IpSetScope }}
+        IPAddressVersion: {{ ip_set_data.IpSetIPVersion }}
+        Addresses: {{ ip_set_data.IpSetAddresses | tojson }}
+  {%- endfor %}
+  {%- endfor %}
+
+Outputs:
+  {% for ip_set in sceptre_user_data.ip_sets -%}
+  {% for ip_set_name,ip_set_data in ip_set.items() %}
+  {{ ip_set_name | indent(width=2) }}:
+    Value: !GetAtt {{ ip_set_name }}.Arn
+  {%- endfor %}
+  {%- endfor %}
+ 
+     
+
+       
+       
+       
+
+   
+

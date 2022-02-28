@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  NameTagValue:
+    Type: String
+
+
+Description: >-
+  This template creates Web ACL Rules
+
+Resources:
+  {% for web_acl in sceptre_user_data.web_acls -%}
+  {% for web_acl_name,web_acl_data in web_acl.items() %}
+  {{ web_acl_name }}:
+    Type: 'AWS::WAFv2::WebACL'
+    Properties:
+      Name: {{ web_acl_data.WebACLName }}
+      {%- if web_acl_data.Scope is defined %}
+      Scope: {{ web_acl_data.Scope }}
+      {%- endif %}
+      Description: {{ web_acl_data.WebAclDescription }}
+      {%- if web_acl_data.DefaultAction is defined %}
+      DefaultAction: {{ web_acl_data.DefaultAction | tojson }}
+      {%- endif %}
+      {%- if web_acl_data.VisibilityConfig is defined %}
+      VisibilityConfig: {{ web_acl_data.VisibilityConfig | tojson }}
+      {%- endif %}
+      {%- if web_acl_data.CustomResponseBodies is defined %}
+      CustomResponseBodies: {{ web_acl_data.CustomResponseBodies | tojson }}
+      {%- endif %}
+      Rules: {{ web_acl_data.Rules | tojson }}
+  {%- endfor %}
+  {%- endfor %}
+
+Outputs:
+  {%- for web_acl in sceptre_user_data.web_acls %}
+  {%- for web_acl_name, web_acl_data in web_acl.items() %}
+  {{ web_acl_name | indent(width=2) }}:
+    Value: !GetAtt {{ web_acl_name }}.Arn
+  {%- endfor %}
+  {%- endfor %}
