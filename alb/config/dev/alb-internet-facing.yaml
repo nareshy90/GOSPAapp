@@ -1,0 +1,16 @@
+template:
+  path: alb.yaml.j2
+  type: file
+parameters:
+  Subneta: !stack_output_external gospa-app-project-dev-vpc::PublicSubnet1
+  Subnetb: !stack_output_external gospa-app-project-dev-vpc::PublicSubnet2
+  AlbName: "go-spa-alb"
+  LBScheme: "internet-facing"
+  AlbSecurityGroup: !stack_output_external security-groups-dev-ec2-rds-alb-sg::ALBSG
+  ALBType: "application"
+  IpAddressType: "ipv4"
+
+sceptre_user_data:
+  s3LogsEnabled: 'true'
+  s3LoggingBucket: !stack_output_external storage-dev-s3-elb-logging-bucket::S3Bucket
+  s3LoggingPrefix: "go-spa-alb-logging"

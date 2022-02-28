@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "This template creates an ALB"
+
+Parameters:
+  Subneta:
+    Type: String
+  Subnetb:
+    Type: String
+  AlbName:
+    Type: String
+  AlbSecurityGroup:
+    Type: String
+  LBScheme:
+    Type: String
+  ALBType:
+    Type: String
+  IpAddressType:
+    Type: String
+
+Resources:
+  ElasticALB:
+    Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    Properties:
+        {% if sceptre_user_data.s3LogsEnabled == true %}
+        LoadBalancerAttributes:
+          - Key: 'access_logs.s3.enabled'
+            Value: {{ sceptre_user_data.s3LogsEnabled }}
+          - Key: 'access_logs.s3.bucket'
+            Value: {{ sceptre_user_data.s3LoggingBucket }}
+          - Key: 'access_logs.s3.prefix'
+            Value: {{ sceptre_user_data.s3LoggingPrefix }}
+        {% endif %}
+        Name: !Ref "AlbName"
+        Scheme: !Ref "LBScheme"
+        Type: !Ref ALBType
+        Subnets: 
+          - !Ref Subneta
+          - !Ref Subnetb
+        SecurityGroups: 
+          - !Ref AlbSecurityGroup
+        IpAddressType: !Ref IpAddressType
+
+Outputs:
+  AlbArn:
+    Description: Application Load Balancer ARN
+    Value: !Ref ElasticALB
+  AlbDnsName:
+    Description: Application Load Balancer DNS Name
+    Value: !GetAtt ElasticALB.DNSName

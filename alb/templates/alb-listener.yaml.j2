@@ -1,0 +1,91 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template ceates Elastic Load Balancer Listener and Target Group
+
+Parameters:
+  LoadBalancerArn:
+    Type: String
+
+Resources:
+  {% for listener in sceptre_user_data.Listeners -%}
+  {% for listener_name, listener_data in listener.items() %}
+  {{ listener_name }}:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: {{ listener_data.action_type }}
+          TargetGroupArn: {{ listener_data.target_group_arn }}
+      LoadBalancerArn: !Ref LoadBalancerArn
+      Port: {{ listener_data.port }}
+      Protocol: {{ listener_data.protocol }}
+      {%- if listener_data.certificate_arn is defined %}
+      Certificates:
+        - CertificateArn: {{ listener_data.certificate_arn }}
+      {%- endif %}
+      {%- if listener_data.alpn_policy is defined %}
+      AlpnPolicy:
+        - {{ listener_data.alpn_policy }}
+      {%- endif %}   
+  {% endfor %}
+  {%- endfor %}
+  
+  {% for target_group in sceptre_user_data.TargetGroups -%}
+  {% for group_name, group_data in target_group.items() %}
+  {{ group_name }}:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: {{ group_data.target_group_name }}
+      {%- if group_data.targets is defined %}
+      Targets: {{ group_data.targets | tojson }}
+      {%- endif %}
+      {%- if group_data.target_type is defined %}
+      TargetType: {{ group_data.target_type }}
+      {%- endif %}
+    {%- if group_data.target_type is defined %}
+    {% if group_data.target_type in ["ip", "instance", "alb"] %}
+      Protocol: {{ group_data.protocol }}
+      Port: {{ group_data.port }}
+      {%- if sceptre_user_data.VpcId is defined %}
+      VpcId: {{ sceptre_user_data.VpcId }}
+      {%- endif %}
+    {%- endif %}
+
+      {%- if group_data.health_check is defined %}
+      HealthCheckIntervalSeconds: {{ group_data.health_check.HealthCheckIntervalSeconds }}
+      {%- if group_data.health_check.HealthCheckProtocol != "TCP" %}
+      HealthCheckPath: {{ group_data.health_check.HealthCheckPath }}
+      {% endif %}
+      {%- if group_data.protocol != "TCP" %}
+      HealthCheckTimeoutSeconds: {{ group_data.health_check.HealthCheckTimeoutSeconds }}
+      {% endif %}
+      HealthCheckPort: {{ group_data.health_check.HealthCheckPort }}
+      HealthCheckProtocol: {{ group_data.health_check.HealthCheckProtocol }}
+      HealthyThresholdCount: {{ group_data.health_check.HealthyThresholdCount }}
+      UnhealthyThresholdCount: {{ group_data.health_check.UnhealthyThresholdCount }}
+      {%- if group_data.health_check.Matcher  is defined %}
+      Matcher: {{ group_data.health_check.Matcher | tojson }}
+      {%- endif %}
+      {%- endif %}
+    {%- endif %}
+  {% endfor %}
+  {%- endfor %}
+
+
+
+Outputs:
+  {% for listener in sceptre_user_data.Listeners -%}
+  {% for listener_name, listener_data in listener.items() %}
+  {{ listener_name }}ARN:
+    Description: Listeners ARN
+    Value: !GetAtt {{ listener_name }}.ListenerArn
+  {% endfor %}
+  {%- endfor %}
+  {% for target_group in sceptre_user_data.TargetGroups -%}
+  {% for group_name, group_data in target_group.items() %}
+  {{ group_name }}ARN:
+    Description: Target Group ARN
+    Value: !Ref {{ group_name }}
+  {% endfor %}
+  {%- endfor %}
+  
+

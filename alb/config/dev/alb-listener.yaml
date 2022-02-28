@@ -1,0 +1,31 @@
+template:
+  path: alb-listener.yaml.j2
+  type: file
+parameters:
+  LoadBalancerArn: !stack_output_external alb-dev-alb-internet-facing::AlbArn
+
+sceptre_user_data:
+  VpcId: !stack_output_external gospa-app-project-dev-vpc::VPC
+  Listeners:
+  - Listener1:
+      action_type: forward
+      target_group_arn: "!Ref TargetGroup1"
+      port: 80
+      protocol: HTTP
+  TargetGroups:
+  - TargetGroup1:
+      health_check:
+        HealthCheckIntervalSeconds: 15
+        HealthCheckPath: /healthcehck/
+        HealthCheckPort: traffic-port
+        HealthCheckProtocol: HTTP
+        HealthCheckTimeoutSeconds: 5
+        HealthyThresholdCount: 3
+        Matcher:
+          HttpCode: 200
+        UnhealthyThresholdCount: 5
+      port: "3000"
+      protocol: HTTP
+      target_type: instance
+      target_group_name: go-spa-tg
+  
