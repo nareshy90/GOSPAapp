@@ -72,10 +72,17 @@ sceptre_user_data:
     - ec2ingressrule2:
         Description: Allows port 22
         GroupId: "!Ref EC2SG"
-        CidrIp: 10.0.0.0/8
+        CidrIp: 10.11.0.0/16
         IpProtocol: tcp
         FromPort: 22 
         ToPort: 22
+    - ec2ingressrule3:
+        Description: Allows port 443
+        GroupId: "!Ref EC2SG"
+        CidrIp: 10.11.0.0/16
+        IpProtocol: tcp
+        FromPort: 443 
+        ToPort: 443
     - albingressrule1:
         Description: Allows incoming port 80 traffic form anywhere
         GroupId: "!Ref ALBSG"
