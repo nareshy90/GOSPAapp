@@ -1,0 +1,108 @@
+template:
+  path: sg.yaml.j2
+  type: file
+
+{% set ind_step = 2 %}
+
+{% macro render_standard(key, value) %}
+{% if key is string %}
+{{key}}: {{value}}
+{% else %}
+{{ value }}
+{% endif %}
+{% endmacro %}
+
+{% macro render_dict(key, dict, idx) %}
+{% if key is string %}
+{{ key }}:
+{% endif %}
+  {% for k, value in dict.items() %}
+  {{ render(k, value, "", idx + 1)}}
+  {% else %}
+  {{ dict }}
+  {% endfor %}
+{% endmacro %}
+
+{% macro render_array(key, values, idx) %}
+{% if key is string %}
+{{ key }}:
+{% endif %}
+  {% for value in values %}
+  - {{ render(_, value, "", idx + 1) }}
+  {% else %}
+  {{ values }}
+  {% endfor %}
+{% endmacro %}
+
+{% macro render(key, value, default, idx=1) %}
+{% if value is not defined %}
+{{ render(key, default) }}
+{% elif value is mapping %}
+{{ render_dict(key, value, idx) | indent(first=True, width=(idx * ind_step)) }}
+{% elif value is iterable and value is not string %}
+{{ render_array(key, value, idx) | indent(first=True, width=(idx * ind_step)) }}
+{% else %}
+{{ render_standard(key, value) | indent(first=True, width=(idx * ind_step)) }}
+{% endif %}
+{% endmacro %}
+
+
+sceptre_user_data:
+  StackName: gospaapp-ec2-rds-alb
+  StackDescription: GO SPA APP  EC2 RDS and ALB SGs
+  VPCId: !stack_output_external gospa-app-project-dev-vpc::VPC
+  sg_name: ec2-rds-alb-sg
+  WhiteList:
+    - EC2SG:
+        name: ec2-sg
+        description: EC2 security group
+    - ALBSG:
+        name: alb-sg
+        description: ALB security group
+    - RDSSG:
+        name: rds-sg
+        description: RDS security group
+  IngressRules:
+    - ec2ingressrule1:
+        Description: Allows all incoming traffic from ALB
+        DependsOn: ALBSG
+        GroupId: "!Ref EC2SG"
+        SourceSecurityGroupId: "!Ref ALBSG"
+        IpProtocol: "-1"
+    - ec2ingressrule2:
+        Description: Allows port 22
+        GroupId: "!Ref EC2SG"
+        CidrIp: 10.0.0.0/8
+        IpProtocol: tcp
+        FromPort: 22 
+        ToPort: 22
+    - albingressrule1:
+        Description: Allows incoming port 80 traffic form anywhere
+        GroupId: "!Ref ALBSG"
+        CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: 80 
+        ToPort: 80
+    - rdsingressrule1:
+        Description: Allows 5432 port incoming traffic from EC2
+        DependsOn: EC2SG
+        GroupId: "!Ref RDSSG"
+        SourceSecurityGroupId: "!Ref EC2SG"
+        IpProtocol: tcp
+        FromPort: 5432 
+        ToPort: 5432
+  EgressRules:
+    - albegressrule1:
+        Description: Allows all outgoing traffic to EC2 SG
+        DependsOn: EC2SG
+        GroupId: "!Ref ALBSG"
+        IpProtocol: "-1"
+        DestinationSecurityGroupId: "!Ref EC2SG"
+    - ec2egressrule2:
+        Description: Allows outgoing traffic for port 5432  to RDS
+        DependsOn: RDSSG
+        GroupId: "!Ref EC2SG"
+        IpProtocol: tcp
+        FromPort: 5432
+        ToPort: 5432
+        DestinationSecurityGroupId: "!Ref RDSSG"

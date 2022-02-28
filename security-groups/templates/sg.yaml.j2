@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "{{ sceptre_user_data.StackDescription }}"
+
+{%- macro add_common_tags() %}
+{%- for key, value in sceptre_user_data.common_tags.items() %}
+- Key: {{ key }}
+  Value: {{ value }}
+{%- endfor -%}
+{%- endmacro %}
+
+{%- macro resource_name(name) %}
+{{- sceptre_user_data.sg_name | replace("-", "") }}{{ name }}
+{%- endmacro %}
+ 
+Resources:
+{%- for sg_entry in sceptre_user_data.WhiteList %}
+  {%- for name, data in sg_entry.items() %}
+  {{ name | indent(width=2) }}:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: {{ sceptre_user_data.VPCId }}
+      GroupDescription: {{ data.description }}
+      GroupName: {{ name }}
+      Tags:
+        - Key: Name
+          Value: {{ sceptre_user_data.sg_name }}-{{ name }}
+  {%- endfor %}
+{%- endfor %}
+
+  
+  {% for ingress in sceptre_user_data.IngressRules -%}
+  {% for ingress_name, ingress_data in ingress.items() %}
+  {{ ingress_name }}:
+    Type: AWS::EC2::SecurityGroupIngress
+    {%- if ingress_data.DependsOn is defined %}
+    DependsOn: {{ ingress_data.DependsOn }}
+     {%- endif %}
+    Properties:
+      Description: {{ ingress_data.Description }}
+      GroupId: {{ ingress_data.GroupId }}
+      {%- if ingress_data.CidrIp is defined %}
+      CidrIp: {{ ingress_data.CidrIp | tojson }}
+      {%- endif %}
+      {%- if ingress_data.SourceSecurityGroupId is defined %}
+      SourceSecurityGroupId: {{ ingress_data.SourceSecurityGroupId }}
+      {%- endif %}
+      {%- if ingress_data.IpProtocol is defined %}
+      IpProtocol: {{ ingress_data.IpProtocol }}
+      {%- endif %}
+      {%- if ingress_data.FromPort is defined %}
+      FromPort: {{ ingress_data.FromPort }}
+      {%- endif %}
+      {%- if ingress_data.ToPort is defined %}
+      ToPort: {{ ingress_data.ToPort }}
+      {%- endif %}
+  {%- endfor %}
+{%- endfor %}
+
+  
+  {% for egress in sceptre_user_data.EgressRules -%}
+  {% for egress_name, egress_data in egress.items() %}
+  {{ egress_name }}:
+    Type: AWS::EC2::SecurityGroupEgress
+    {%- if egress_data.DependsOn is defined %}
+    DependsOn: {{ egress_data.DependsOn }}
+     {%- endif %}
+    Properties:
+      Description: {{ egress_data.Description }}
+      GroupId: {{ egress_data.GroupId }}
+      {%- if egress_data.CidrIp is defined %}
+      CidrIp: {{ egress_data.CidrIp | tojson }}
+      {%- endif %}
+      {%- if egress_data.DestinationSecurityGroupId is defined %}
+      DestinationSecurityGroupId: {{ egress_data.DestinationSecurityGroupId }}
+      {%- endif %}
+      {%- if egress_data.IpProtocol is defined %}
+      IpProtocol: {{ egress_data.IpProtocol }}
+      {%- endif %}
+      {%- if egress_data.FromPort is defined %}
+      FromPort: {{ egress_data.FromPort }}
+      {%- endif %}
+      {%- if egress_data.ToPort is defined %}
+      ToPort: {{ egress_data.ToPort }}
+      {%- endif %}
+  {%- endfor %}
+{%- endfor %}
+
+Outputs:
+{%- for sg_entry in sceptre_user_data.WhiteList %}
+  {%- for name, data in sg_entry.items() %}
+  {{ name | indent(width=2) }}:
+    Value: !Ref {{ name }}
+  {%- endfor %}
+{%- endfor %}
