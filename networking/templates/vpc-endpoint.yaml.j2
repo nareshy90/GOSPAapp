@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Creates VPC endpoint"
+
+Parameters:
+  SecurityGroupIds:
+    Type: String
+  SubnetAZ1:
+    Type: String
+  SubnetAZ2:
+    Type: String
+  VpcEndpointType:
+    Type: String
+  VpcId:
+    Type: String
+  EndPointServiceName:
+    Type: String
+
+Resources:
+  VPCEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties: 
+      SecurityGroupIds: 
+        - !Ref SecurityGroupIds
+      SubnetIds:
+        - !Ref SubnetAZ1
+        - !Ref SubnetAZ2
+      ServiceName: !Ref EndPointServiceName
+      VpcEndpointType: !Ref VpcEndpointType
+      VpcId: !Ref VpcId
+      PrivateDnsEnabled: True
+

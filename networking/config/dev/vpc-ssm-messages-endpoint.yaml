@@ -1,0 +1,10 @@
+template:
+  path: vpc-endpoint.yaml.j2
+  type: file
+parameters:
+  SecurityGroupIds: !stack_output_external security-groups-dev-ec2-rds-alb-sg::EC2SG
+  SubnetAZ1: !stack_output_external gospa-app-project-dev-vpc::PrivateSubnet1
+  SubnetAZ2: !stack_output_external gospa-app-project-dev-vpc::PrivateSubnet2
+  VpcEndpointType: "Interface"
+  VpcId: !stack_output_external gospa-app-project-dev-vpc::VPC
+  EndPointServiceName: com.amazonaws.ap-southeast-2.ssmmessages
