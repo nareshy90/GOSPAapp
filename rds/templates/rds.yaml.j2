@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Create Postgresql RDS Instance"
+
+Parameters:
+  RDSDBSubneta:
+    Type: String
+  RDSDBSubnetb:
+    Type: String
+  RdsMonRoleName:
+    Type: String
+  DBSubnetGroupName:
+    Type: String
+  DBInstanceIdentifier:
+    Type: String
+  rdssgId:
+    Type: String
+  MyRDSSecret:
+    Type: String
+  EngineName:
+    Type: String
+  Engine:
+    Type: String
+  EngineVersion:
+    Type: String
+  StorageType:
+    Type: String
+  AllocatedStorage:
+    Type: Number
+  MaxAllocatedStorage:
+    Type: Number
+  Port:
+    Type: Number
+  MonitoringInterval:
+    Type: Number
+  DBInstanceClass:
+    Type: String
+  MultiAZ:
+    Type: String
+  LicenseModel:
+    Type: String
+  
+Resources:   
+  # Pull the x3 AZ subnets for the DB instance from the existing VPC stack
+  RDSDBSubnetGroup:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+        DBSubnetGroupDescription: "Created from CFN"
+        DBSubnetGroupName: !Ref "DBSubnetGroupName"
+        SubnetIds: 
+          - !Ref "RDSDBSubneta"
+          - !Ref "RDSDBSubnetb"
+
+  # DB instance definition
+  RDSDBInstance:
+    Type: "AWS::RDS::DBInstance"
+    Properties:
+        DBInstanceIdentifier: !Ref "DBInstanceIdentifier"
+        AllocatedStorage: !Ref AllocatedStorage
+        DBInstanceClass: !Ref "DBInstanceClass"
+        Engine: !Ref "Engine"
+        {% raw -%}
+        MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref MyRDSSecret, ':SecretString:username}}']]
+        MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref MyRDSSecret, ':SecretString:password}}']]
+        {%- endraw %}
+        MultiAZ: !Ref MultiAZ
+        EngineVersion: !Ref EngineVersion
+        AutoMinorVersionUpgrade: true
+        LicenseModel: !Ref LicenseModel
+        PubliclyAccessible: false
+        StorageType: !Ref "StorageType"
+        Port: !Ref Port
+        StorageEncrypted: true # Using AWS managed keys.
+        CopyTagsToSnapshot: true
+        MonitoringInterval: !Ref MonitoringInterval
+        EnableIAMDatabaseAuthentication: false
+        CopyTagsToSnapshot: true
+        DeletionProtection: false
+        DBSubnetGroupName: !Ref "RDSDBSubnetGroup"
+        MaxAllocatedStorage: !Ref MaxAllocatedStorage
+        EnableCloudwatchLogsExports: 
+          - "postgresql"
+          - "upgrade"
+        VPCSecurityGroups: 
+          - !Ref rdssgId
+
+  # Attach pw to DB instance.
+  SecretRDSInstanceAttachment:
+      Type: "AWS::SecretsManager::SecretTargetAttachment"
+      Properties:
+          SecretId: !Ref MyRDSSecret
+          TargetId: !Ref RDSDBInstance
+          TargetType: AWS::RDS::DBInstance
+
+Outputs:
+  DBEndPointAddress:
+    Description: DB Endpoint Address.
+    Value: !GetAtt RDSDBInstance.Endpoint.Address
+    Export:
+      Name: !Sub '${AWS::StackName}-EndpointAddress'
+  DBPort:
+    Description: DB Port.
+    Value: !GetAtt RDSDBInstance.Endpoint.Port
+    Export:
+      Name: !Sub '${AWS::StackName}-EndpointPort'
+  DBInstanceName:
+    Description: DB Instance Name.
+    Value: !Ref RDSDBInstance
+    Export:
+      Name: !Sub '${AWS::StackName}-RDSDBInstance'

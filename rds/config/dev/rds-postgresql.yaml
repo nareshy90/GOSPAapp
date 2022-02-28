@@ -1,0 +1,25 @@
+template:
+  path: rds.yaml.j2
+  type: file
+parameters:
+  RDSDBSubneta: !stack_output_external gospa-app-project-dev-vpc::PrivateSubnet1
+  RDSDBSubnetb: !stack_output_external gospa-app-project-dev-vpc::PrivateSubnet2
+  MyRDSSecret: 'arn:aws:secretsmanager:ap-southeast-2:580243929783:secret:RDSSecret-GKDchP'
+  rdssgId: !stack_output_external security-groups-dev-ec2-rds-alb-sg::RDSSG
+  RdsMonRoleName: "rds-monitoring-role"
+  DBSubnetGroupName: "rds-subnetGroup"
+  DBInstanceIdentifier: "go-spa-db"
+  #Run AWS CLI command to get version details 'aws rds describe-db-engine-versions --engine postgres'
+  EngineName: "postgres"
+  Engine: "postgres"
+  EngineVersion: "9.6.20"
+  StorageType: "gp2"
+  AllocatedStorage: '20'
+  MaxAllocatedStorage: '25'
+  Port: '5432'
+  MonitoringInterval: '0'
+  DBInstanceClass: "db.t2.small"
+  MultiAZ: "true"
+  LicenseModel: "postgresql-license"
+        
+  
