@@ -1,0 +1,9 @@
+---
+- name: Deploy Go APP configuration
+  hosts: 127.0.0.1
+  gather_facts: true
+  connection: local
+  become: yes
+
+  roles:
+    - gospa

@@ -1,0 +1,25 @@
+
+- name: Set Fact for Python2 interpreter to use AWS S3 module
+  set_fact:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Download SourceCode from S3 bucket
+  aws_s3:
+    bucket: '{{ s3bucket }}'
+    object: '{{ s3object }}'
+    dest: /app/TechChallengeApp_v.0.9.0_linux64.zip
+    mode: get
+
+- name: Unpack the source code
+  shell: unzip /app/TechChallengeApp_v.0.9.0_linux64.zip
+
+- name: Copy the config file
+  templates:
+    src: templeates/config.toml
+    dest: /app/dist/config.toml
+- name: Update DB
+  shell: /app/dist/TechChallengeApp updatedb -s
+
+- name: Start the application and run it in background
+  shell: /app/dist/TechChallengeApp serve &
+  

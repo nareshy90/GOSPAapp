@@ -1,0 +1,7 @@
+"DbUser" = "postgres"
+"DbPassword" = "{{ password }}"
+"DbName" = "postgres"
+"DbPort" = "5432"
+"DbHost" = "{{ DbHost }}"
+"ListenHost" = "0.0.0.0"
+"ListenPort" = "3000"
