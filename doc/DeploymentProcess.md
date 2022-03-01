@@ -149,7 +149,7 @@ Login to WSL to deploy the stacks using Sceptre
 	  `sceptre launch -y dev/webrules.yaml.yaml`
 	  `sceptre launch -y dev/webrules-association.yaml`
 
-## Note down the ALB DNS name and open it in your web browser and you should see like below.
+## Note down the ALB DNS name and open it in your web browser and you should see like below if the deoployment is successful.
 
 ![Application Screenshot](https://github.com/nareshy90/GOSPAapp/blob/main/App-screenshot.png)
 	  
