@@ -2,51 +2,6 @@ template:
   path: webrules-association.yaml.j2
   type: file
 
-{% set ind_step = 2 %}
-
-{% macro render_standard(key, value) %}
-{% if key is string %}
-{{key}}: {{value}}
-{% else %}
-{{ value }}
-{% endif %}
-{% endmacro %}
-
-{% macro render_dict(key, dict, idx) %}
-{% if key is string %}
-{{ key }}:
-{% endif %}
-  {% for k, value in dict.items() %}
-  {{ render(k, value, "", idx + 1)}}
-  {% else %}
-  {{ dict }}
-  {% endfor %}
-{% endmacro %}
-
-{% macro render_array(key, values, idx) %}
-{% if key is string %}
-{{ key }}:
-{% endif %}
-  {% for value in values %}
-  - {{ render(_, value, "", idx + 1) }}
-  {% else %}
-  {{ values }}
-  {% endfor %}
-{% endmacro %}
-
-{% macro render(key, value, default, idx=1) %}
-{% if value is not defined %}
-{{ render(key, default) }}
-{% elif value is mapping %}
-{{ render_dict(key, value, idx) | indent(first=True, width=(idx * ind_step)) }}
-{% elif value is iterable and value is not string %}
-{{ render_array(key, value, idx) | indent(first=True, width=(idx * ind_step)) }}
-{% else %}
-{{ render_standard(key, value) | indent(first=True, width=(idx * ind_step)) }}
-{% endif %}
-{% endmacro %}
-
-
 sceptre_user_data:
   Web_Acl_Associations:
   - WebACLAssociations: # This is the name of the resource
