@@ -1,6 +1,8 @@
 #!/bin/bash
+
+#This script will create EC2 key pair and store it on AWS Secretrs Manager
+
 # Read the user input   
-  
 echo "Enter the Key Name: "  
 read Key_name
 echo "Creating EC2 keypair"

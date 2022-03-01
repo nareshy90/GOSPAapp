@@ -1,6 +1,8 @@
 #!/bin/bash
 
-echo "Creating and run SSM association for running Ansible playbook target as Tags"
+#This script will create SSM association which will run SSM automation docuemnt with Ansible Playbook
+
+echo "Creating SSM association for running Ansible playbook target as Tags"
 
 aws ssm create-association --name "AWS-ApplyAnsiblePlaybooks" \
 --targets '[{"Key":"tag:Name","Values":["go-spa-dev"]}]' \
