@@ -47,6 +47,7 @@ Login to WSL to deploy the stacks using Sceptre
 >**Note** You need to be on the stack's main directory to deploy the templates.
 > For Eg. Here networking is the main directory and actual Cloud Formation template is in templates folder and vpc.yaml under config is the input file. See below basic directory structure in Sceptre
 **networking**
+
 ├── config
 │   ├── config.yaml
 │   └── dev
