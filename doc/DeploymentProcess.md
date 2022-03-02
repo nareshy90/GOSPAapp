@@ -40,22 +40,7 @@ Login to WSL to deploy the stacks using Sceptre
 	 `sceptre launch -y dev/vpc-ssm-endpoint.yaml`
 	 `sceptre launch -y dev/vpc-ssmmessages-endpoint.yaml`
 
-	  * Sample output
-	  
-	  > [2022-03-01 13:27:28] - dev/vpc - Launching Stack  
-[2022-02-28 13:27:28] - dev/vpc - Stack is in the PENDING state  
-[2022-02-28 13:27:28] - dev/vpc - Creating Stack  
-[2022-02-28 13:27:28] - dev/vpc gospa-app-project-dev-vpc AWS::CloudFormation::Stack CREATE_IN_PROGRESS User Initiated  
-[2022-02-28 13:27:33] - dev/vpc InternetGateway AWS::EC2::InternetGateway CREATE_IN_PROGRESS  
-[2022-02-28 13:27:33] - dev/vpc VPC AWS::EC2::VPC CREATE_IN_PROGRESS  
-[2022-02-28 13:27:37] - dev/vpc VPC AWS::EC2::VPC CREATE_IN_PROGRESS Resource creation Initiated  
-[2022-02-28 13:27:37] - dev/vpc InternetGateway AWS::EC2::InternetGateway CREATE_IN_PROGRESS Resource creation Initiated  
-[2022-02-28 13:27:49] - dev/vpc VPC AWS::EC2::VPC CREATE_COMPLETE  
-[2022-02-28 13:27:54] - dev/vpc PrivateRouteTable1 AWS::EC2::RouteTable CREATE_IN_PROGRESS  
-[2022-02-28 13:27:54] - dev/vpc PublicSubnet2 AWS::EC2::Subnet CREATE_IN_PROGRESS  
-[2022-02-28 13:27:54] - dev/vpc PublicRouteTable AWS::EC2::RouteTable CREATE_IN_PROGRESS  
-[2022-02-28 13:27:54] - dev/vpc PrivateSubnet2 AWS::EC2::Subnet CREATE_IN_PROGRESS  
-[2022-02-28 13:27:54] - dev/vpc InternetGateway AWS::EC2::InternetGateway CREATE_COMPLETE
+
 
 > **Info** Refer [Architetcture doc](https://github.com/nareshy90/GOSPAapp/blob/main/doc/ArchitecturalOverview.md) to check what services this stack is going to deploy
 
